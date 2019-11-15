@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axiosWithAuth from "../utils/axiosWithAuth";
 
 const initialColor = {
   color: "",
@@ -7,7 +7,6 @@ const initialColor = {
 };
 
 const ColorList = ({ colors, updateColors }) => {
-  console.log(colors);
   const [editing, setEditing] = useState(false);
   const [colorToEdit, setColorToEdit] = useState(initialColor);
 
@@ -16,15 +15,61 @@ const ColorList = ({ colors, updateColors }) => {
     setColorToEdit(color);
   };
 
+  const handleChangesName = e => {
+    setColorToEdit({
+      ...colorToEdit,
+      color: e.target.value
+    });
+  };
+  const handleChangesCode = e => {
+    setColorToEdit({
+      ...colorToEdit,
+      code: { hex: e.target.value }
+    });
+  };
+
   const saveEdit = e => {
     e.preventDefault();
-    // Make a put request to save your updated color
-    // think about where will you get the id from...
-    // where is is saved right now?
+    axiosWithAuth()
+      .put(`/colors/${colorToEdit.id}`, colorToEdit)
+      .then(res => {
+        console.log(res);
+        setEditing(false);
+        updateColors(
+          colors.map(color => {
+            return color.id === res.data.id ? res.data : color;
+          })
+        );
+      });
   };
 
   const deleteColor = color => {
-    // make a delete request to delete this color
+    axiosWithAuth()
+      .delete(`/colors/${color.id}`)
+      .then(res => {
+        console.log(res);
+        updateColors(
+          colors.filter(color => {
+            return color.id !== res.data;
+          })
+        );
+      })
+      .catch(err => console.log("yikes couldnt delete", err));
+  };
+
+  const addColor = e => {
+    e.preventDefault();
+    axiosWithAuth()
+      .post("/colors/", colorToEdit)
+      .then(res => {
+        console.log(res);
+
+        updateColors(res.data);
+      })
+      .catch(err => {
+        console.log("could not add color", err);
+      });
+    document.querySelector(".addColorForm").reset();
   };
 
   return (
@@ -34,12 +79,14 @@ const ColorList = ({ colors, updateColors }) => {
         {colors.map(color => (
           <li key={color.color} onClick={() => editColor(color)}>
             <span>
-              <span className="delete" onClick={e => {
-                    e.stopPropagation();
-                    deleteColor(color)
-                  }
-                }>
-                  x
+              <span
+                className="delete"
+                onClick={e => {
+                  e.stopPropagation();
+                  deleteColor(color);
+                }}
+              >
+                x
               </span>{" "}
               {color.color}
             </span>
@@ -80,8 +127,33 @@ const ColorList = ({ colors, updateColors }) => {
           </div>
         </form>
       )}
-      <div className="spacer" />
-      {/* stretch - build another form here to add a color */}
+      <div className="spacer">
+        {/* stretch - build another form here to add a color */}
+        <form className="addColorForm" onSubmit={addColor}>
+          <label>
+            color:
+            <input
+              placeholder="color name"
+              type="text"
+              name="color"
+              value={colorToEdit.color}
+              onChange={handleChangesName}
+            />
+          </label>
+
+          <label>
+            hex code:
+            <input
+              placeholder="hex code"
+              type="text"
+              name="code"
+              value={colorToEdit.code.hex}
+              onChange={handleChangesCode}
+            />
+          </label>
+          <button type="submit">add color</button>
+        </form>
+      </div>
     </div>
   );
 };
