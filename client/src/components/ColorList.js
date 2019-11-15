@@ -15,6 +15,19 @@ const ColorList = ({ colors, updateColors }) => {
     setColorToEdit(color);
   };
 
+  const handleChangesName = e => {
+    setColorToEdit({
+      ...colorToEdit,
+      color: e.target.value
+    });
+  };
+  const handleChangesCode = e => {
+    setColorToEdit({
+      ...colorToEdit,
+      code: { hex: e.target.value }
+    });
+  };
+
   const saveEdit = e => {
     e.preventDefault();
     axiosWithAuth()
@@ -42,6 +55,21 @@ const ColorList = ({ colors, updateColors }) => {
         );
       })
       .catch(err => console.log("yikes couldnt delete", err));
+  };
+
+  const addColor = e => {
+    e.preventDefault();
+    axiosWithAuth()
+      .post("/colors/", colorToEdit)
+      .then(res => {
+        console.log(res);
+
+        updateColors(res.data);
+      })
+      .catch(err => {
+        console.log("could not add color", err);
+      });
+    document.querySelector(".addColorForm").reset();
   };
 
   return (
@@ -101,15 +129,29 @@ const ColorList = ({ colors, updateColors }) => {
       )}
       <div className="spacer">
         {/* stretch - build another form here to add a color */}
-        <form>
-          <h3>Add New</h3>
+        <form className="addColorForm" onSubmit={addColor}>
           <label>
-            color name: <input type="text" />
+            color:
+            <input
+              placeholder="color name"
+              type="text"
+              name="color"
+              value={colorToEdit.color}
+              onChange={handleChangesName}
+            />
           </label>
+
           <label>
-            hex code: <input type="text" />
+            hex code:
+            <input
+              placeholder="hex code"
+              type="text"
+              name="code"
+              value={colorToEdit.code.hex}
+              onChange={handleChangesCode}
+            />
           </label>
-          <button>Add</button>
+          <button type="submit">add color</button>
         </form>
       </div>
     </div>
