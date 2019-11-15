@@ -4,7 +4,7 @@ import axiosWithAuth from "../utils/axiosWithAuth";
 const Login = props => {
   // make a post request to retrieve a token from the api
   // when you have handled the token, navigate to the BubblePage route
-  const [isLoggedIn, setLoggedIn] = useState(false);
+  // const [isLoggedIn, setLoggedIn] = useState(false);
   const [credentials, setCredentials] = useState({
     username: "",
     password: ""
@@ -13,12 +13,12 @@ const Login = props => {
   const login = e => {
     e.preventDefault();
     axiosWithAuth()
-      .post("/api/login", credentials)
+      .post("api/login", credentials)
       .then(response => {
         console.log("respone", response);
         localStorage.setItem("token", response.data.payload);
         props.history.push("/protected");
-        setLoggedIn(true);
+        // setLoggedIn(true);
       })
       .catch(err => console.log("error", err));
   };
@@ -33,6 +33,7 @@ const Login = props => {
   return (
     <>
       <h2 className="loginTitle">Login to the bubble app!</h2> <br />
+      {/* <h2>{isLoggedIn ? "LOGGED IN" : "Please Log In!"}</h2> */}
       <form onSubmit={login}>
         <label>
           Username:{" "}
